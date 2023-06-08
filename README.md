@@ -6,7 +6,7 @@ This repository contains the material for the [R4DS Project-Club](http://r4ds.io
 
 ### The Package: <https://github.com/myominnoo/shinyAuthX>
 
-### The Presentation: [click on this link to see the presentation](https://fgazzelloni.quarto.pub/spatial-modeling-with-oregonfrogs)
+### The Presentation: [click on this link to see the presentation](https://myominnoo.github.io/shiny_integration)
 
 ### The ShinyApp: <https://myominnoo.shinyapps.io/mBudget/>
 
