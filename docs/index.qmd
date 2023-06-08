@@ -1,0 +1,460 @@
+---
+title: "Shiny Integration with Extended user authentication"
+author: "Myo Minn Oo"
+date: "June 10 2023"
+format: 
+  oregonfrogs-revealjs:
+    footer: "[shinyAuthX](https://github.com/myominnoo/shinyAuthX) - R4DS Project-Club 2023"
+    # revealjs: default
+    pointer:
+       pointerSize: 18
+       color: '#32cd32'
+revealjs-plugins:
+  - pointer
+    
+incremental: true
+embed-resources: true
+# editor: 
+#   markdown: 
+#     wrap: 82
+# this is not used to publish the presentation on quartopub
+# server: shiny
+---
+
+## A little about myself:<br>Myo Minn Oo {.side-text}
+
+-   Email:[dr.myominnoo\@gmail.com](mailto:dr.myominnoo@gmail.com){.email}
+
+-   Twitter: [\@dr_myominnoo](https://twitter.com/dr_myominnoo)
+
+-   GitHub: <https://github.com/myominnoo>
+
+-   Blog: <https://myominnoo.github.io>
+
+# Hello! {.smaller}
+
+::: columns
+::: {.column width="30%"}
+![](images/fg_image.png)
+:::
+
+::: {.column width="70%"}
+-   Postdoctoral Fellow at the University of Manitoba.
+-   Epidemiologist, doing data science and bioinformatics with a background in implementation science, and medical training.
+-   Keen to learn more about R programming and visualization.
+-   Enjoy learning new and `Shiny` things!
+:::
+:::
+
+-   Broad interests in infectious diseases (HIV, Sexually Transmitted Infections, TB, etc) and data visualization with R. 
+-   [Packages](https://myominnoo.github.io/rpackages/): `shinyAuthX`, `mBudget`, `mStats`, `u5mr`
+-   [Projects](https://myominnoo.github.io/projects/): visit my website
+
+
+## How I keep going learning and practicing? {.smaller}
+
+-   [`R for Researchers`](https://www.chrim.ca/event/r-for-researchers/) monthly events for learning and networking at UoM, Winnipeg. It's a good environment for
+    practicing organizing tutorials.
+-   [`Myanmar R User Group`](https://www.youtube.com/watch?v=FCj6TfFY7no&list=PLopxIleZRP2au7xlYffKcwIY341hvCxto&ab_channel=DataRecap) online weekly events: organize and facilite R-related tutorials.
+-   Integrate R into my daily work: create data products, dashboards, and analyses. 
+-   Build things in R outside work: github page in quarto & R, CV in R, Shiny Apps.
+
+::: columns
+::: {.column width="33%"}
+![](images/pngimr-malcon-dashboard.png)
+:::
+
+::: {.column width="33%"}
+![](images/swop-hpv-gates.png)
+:::
+
+::: {.column width="33%"}
+![](images/covid-ab-wireframe.png)
+:::
+:::
+
+# A Personal Journey to Personal Finance Management
+
+## How did it start? {.smaller}
+
+-   Personal finance journey in good old MS Excel with googledrive backup. 
+-   Wanted something completely online. 
+
+::: columns
+::: {.column width="50%"}
+![](images/old-budget-2021.png)
+:::
+
+::: {.column width="50%"}
+![](images/old-budget-dash-2021.png)
+:::
+:::
+
+
+## My wish-list {.smaller}
+
+
+
+::: columns
+::: {.column width="50%"}
+-   Online storage
+-   User authentication for secure access
+-   CRUD: create, retrieve, update, delete
+-   Free of charge!
+:::
+
+::: {.column width="50%"}
+-   Learn and Share R 
+-   Do fun projects
+-   Use what I learn in my work
+:::
+:::
+
+
+![](images/OIP.jpg)
+
+
+
+## Result of many first attempts {.smaller}
+
+
+::: columns
+::: {.column width="50%"}
+![](images/old-budget-app.png)
+:::
+
+::: {.column width="50%"}
+-   Basic Shiny functions
+-   html, css
+-   Permanent storage: mongoDB via mongolite
+-   Communication: Email through blastula 
+:::
+:::
+
+
+
+## What's missing? {.smaller}
+
+-   Messy codes
+-   User authentication - not standardized (not modular)
+-   Sign-up feature - email and mongoDB credentials are hard-coded!!!
+-   No password recovery function for users (me and my wife!)
+-   Buggy
+
+-   `shinyauthr` and `shinymanager` - very useful packages, yet no sign-up or password recovery functionalities
+-   Bias: Other packages with similar functionalities might exist!
+
+
+
+# shinyAuthX
+
+Or Making my life more complicated! 
+
+## Shiny Integration with database and email functionalities {.smaller}
+  
+![](images/shinyAuthX-UI.png)
+
+Created in `draw.io`
+
+## Installation {.smaller}
+
+<br> **Vignette**: <https://myominnoo.github.io/shinyAuthX>
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "2"
+# install.packages("remotes")
+remotes::install_github("myominnoo/shinyAuthX")
+```
+
+
+# Basic: sign-in and sign-out
+
+```{r}
+#| eval: true
+#| echo: true
+#| output-location: fragment
+#| code-line-numbers: "|5"
+library(shiny)
+library(shinyAuthX)
+
+# dataframe that holds usernames, passwords and other user data
+users_base <- create_dummy_users()
+users_base
+```
+
+## Two lines on UI side {.smaller}
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "1|6|3|7"
+ui <- fluidPage(
+  # add signout button UI
+  div(class = "pull-right", signoutUI(id = "signout")),
+
+  # add signin panel UI function without signup or password recovery panel
+  signinUI(id = "signin", .add_forgotpw = FALSE, .add_btn_signup = FALSE),
+
+  # setup output to show user info after signin
+  verbatimTextOutput("user_data")
+)
+
+```
+
+
+## A few codes for server side {.smaller}
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "1|10|12|13|15|4|5|6|18|20"
+server <- function(input, output, session) {
+
+    # call the signout module with reactive trigger to hide/show
+    signout_init <- signoutServer(
+        id = "signout",
+        active = reactive(credentials()$user_auth)
+    )
+
+  # call signin module supplying data frame,
+  credentials <- signinServer(
+    id = "signin",
+    users_db = users_base,
+    sodium_hashed = TRUE,
+    reload_on_signout = FALSE,
+    signout = reactive(signout_init())
+  )
+
+  output$user_data <- renderPrint({
+    # use req to only render results when credentials()$user_auth is TRUE
+    req(credentials()$user_auth)
+    str(credentials())
+  })
+}
+
+```
+
+
+# mongoDB via mongolite {.smaller}
+
+```{r}
+#| eval: false
+#| echo: true
+#| output-location: fragment
+#| code-line-numbers: "1|3|5|7"
+library(mongolite)
+## default mongodb database server for testing: works only with `mtcars`
+con <- mongo("mtcars", url = "mongodb+srv://readwrite:test@cluster0-84vdt.mongodb.net/test")
+## remove any existing rows
+con$drop()
+## check
+con$count()
+# add users_base to con
+shinyAuthX::create_dummy_users() |>
+    con$insert()
+## check again
+con$count()
+## retrieve data
+con$find(fields = '{}')
+```
+
+
+## Pass `con` to `users_db` args  {.smaller}
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "4"
+ # call signin module supplying data frame,
+    credentials <- signinServer(
+        id = "signin",
+        users_db = con$find('{}'), ## add mongodb connection instead of tibble
+        sodium_hashed = TRUE,
+        reload_on_signout = FALSE,
+        signout = reactive(signout_init())
+    )
+```
+
+
+# Extended Sign-up and Password-reset modules
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "1|6|8|10"
+ui <- fluidPage(
+    # add signout button UI
+    div(class = "pull-right", signoutUI(id = "signout")),
+
+    # add signin panel UI function with signup panel
+    signinUI(id = "signin", .add_forgotpw = TRUE, .add_btn_signup = TRUE),
+    # add signup panel
+    signupUI("signup"),
+    # add password-reset panel
+    forgotpwUI("pw-reset"),
+
+    # setup output to show user info after signin
+    verbatimTextOutput("user_data")
+)
+```
+
+## Just two more lines on server side  {.smaller}
+
+-   Pass `credentials` & `con` to the other parts! 
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "1|10|19|20|23|24"
+server <- function(input, output, session) {
+
+    # call the signout module with reactive trigger to hide/show
+    signout_init <- signoutServer(
+        id = "signout",
+        active = reactive(credentials()$user_auth)
+    )
+
+    # call signin module supplying data frame,
+    credentials <- signinServer(
+        id = "signin",
+        users_db = con$find('{}'), ## add mongodb connection instead of tibble
+        sodium_hashed = TRUE,
+        reload_on_signout = FALSE,
+        signout = reactive(signout_init())
+    )
+
+    # call signup module supplying credentials() reactive and mongodb
+    signupServer(
+        id = "signup", credentials = credentials, mongodb = con
+    )
+    # call password-reset module supplying credentials() reactive and mongodb
+    forgotpwServer(
+        id = "pw-reset", credentials = credentials, mongodb = con
+    )
+
+    output$user_data <- renderPrint({
+        # use req to only render results when credentials()$user_auth is TRUE
+        req(credentials()$user_auth)
+        str(credentials())
+    })
+}
+```
+
+
+# Communicate users via Email
+
+-   Send verification codes for sign-up and password reset.
+-   Welcome emails.
+
+**[blastula package](https://github.com/rstudio/blastula)**
+-   Compose emails: `compose_email()`
+-   Send emails: `smtp_send()`
+-   credential file: `creds_file()`
+
+
+
+## Create Email Template {.smaller}
+
+```{r}
+#| eval: false
+#| echo: true
+#| code-line-numbers: "1|2|3|13|14|17|18"
+template <- shinyAuthX::email_template(
+	creds_file = blastula::creds_file("path/outlook_creds"),
+	from = "user@email.com"
+)
+
+
+## changes to server 
+server <- function(input, output, session) {
+  
+  ## other codes here
+  
+    # call signup module supplying credentials() reactive and mongodb
+    signupServer(
+        id = "signup", credentials = credentials, mongodb = con, email = template
+    )
+    # call password-reset module supplying credentials() reactive and mongodb
+    forgotpwServer(
+        id = "pw-reset", credentials = credentials, mongodb = con, email = template
+    )
+  
+}
+
+```
+
+
+## Email Template {.smaller}
+
+  
+![](images/email-template.png)
+
+# Planning my budget app 
+
+
+::: columns
+::: {.column width="50%"}
+
+![](images/naming-joke.jpg)
+:::
+
+::: {.column width="50%"}
+![](images/chatgpt-joke.png)
+:::
+:::
+
+## mBudget App {.smaller}
+
+::: columns
+::: {.column width="50%"}
+![](images/app-concept.png)
+:::
+
+::: {.column width="50%"}
+![](images/app-tables.png)
+:::
+:::
+
+
+## mBudget App: A few other steps {.smaller}
+
+-   **Golem framework**
+-   **Rapid prototyping** 
+  -   `shinipsum` and `fakir`
+-   **UI Integration with authentication modules**
+  -   Packages from appsilon: `semantic.dashboard`, `shiny.fluent`, and others - compatibility issues
+  -   Examples from shinyauthr using `shinydashboard` to integrate authentication
+  -   Final decision: `bs4Dash` for app UI
+-   **Email module with blastula**
+  -   Outlook more feasible; Gmail not so much!
+-   **Database integration with mongoDB**
+  -   via mongolite
+-   **Development of the rest of the app**
+
+# Demo
+
+![](images/app-image.png)
+
+# Demo {background-iframe="https://myominnoo.shinyapps.io/mBudget/"}
+
+# Summary
+
+
+::: columns
+::: {.column width="50%"}
+-   Learn R by doing fun projects!
+-   Don't be afraid to make mistakes!
+-   Practice makes your codes better!
+-   Share with others!
+:::
+
+::: {.column width="50%"}
+-   My now wish-list: write more unit tests, automate deployment process, version control with docker, and so on.
+:::
+:::
+
+
+
+
