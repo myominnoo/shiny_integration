@@ -1,5 +1,5 @@
 ---
-title: "Shiny Integration with Extended user authentication"
+title: "Shiny Integration with Extended User Authentication Modules"
 author: "Myo Minn Oo"
 date: "June 10 2023"
 format: 

@@ -1,6 +1,6 @@
-# Shiny integration with MongoDB and Blastula for extended user authentication
+# Shiny Integration with Extended User Authentication Modules
 
-This repository contains the material for the [R4DS Project-Club](http://r4ds.io/join): **Shiny integration for extended user authentication with [shinyAuthX](https://github.com/myominnoo/shinyAuthX)** and demo project **[mBudget](https://github.com/myominnoo/mBudget)**
+This repository contains the material for the [R4DS Project-Club](http://r4ds.io/join): **Shiny integration with extended user authentication via [shinyAuthX](https://github.com/myominnoo/shinyAuthX)** and a demo project **[mBudget](https://github.com/myominnoo/mBudget)**
 
 ------------------------------------------------------------------------
 
