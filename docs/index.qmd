@@ -444,12 +444,18 @@ server <- function(input, output, session) {
 :::
 :::
 
-If you use these packages, please drop me a line and let me know. Email:[dr.myominnoo\@gmail.com](mailto:dr.myominnoo@gmail.com){.email}
+# Disclaimer
+
+- I am not a web security expert so cannot guarantee this auth procedure to be foolproof. 
+- I reiterate Paul Campbell’s disclaimer statement regarding the security risks associated with the package. 
+- If you use these packages, please drop me a line and let me know. Email:[dr.myominnoo\@gmail.com](mailto:dr.myominnoo@gmail.com){.email}
+
 
 
 # Screenshot
 
 ![](images/app-image.png)
+
 
 # Demo {background-iframe="https://myominnoo.shinyapps.io/mBudget/"}
 
