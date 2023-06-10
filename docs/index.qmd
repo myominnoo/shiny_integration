@@ -433,7 +433,21 @@ server <- function(input, output, session) {
   -   via mongolite
 -   **Development of the rest of the app**
 
-# Demo
+# Packages
+::: columns
+::: {.column width="50%"}
+![](images/logo_shinyAuthX.png)
+:::
+
+::: {.column width="50%"}
+![](images/logo_mBudget.png)
+:::
+:::
+
+If you use these packages, please drop me a line and let me know. Email:[dr.myominnoo\@gmail.com](mailto:dr.myominnoo@gmail.com){.email}
+
+
+# Screenshot
 
 ![](images/app-image.png)
 
